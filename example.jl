@@ -1,17 +1,31 @@
 
 using Pkg
-Pkg.activate()
+Pkg.activate(".")
 
 using HTTP
-import HTTP.@register
-import HTTP.serve
-# using Happi
 
+##########################
 
-const APP = HTTP.Router()
-@register(APP,:GET,"/",r::HTTP.Request -> begin
-    @show r
-    return HTTP.Response(200,"Hello, World!")
-end)
+init() = HTTP.Router()
 
-serve(APP,"127.0.0.1",8080)
+function route(resp_fn::Function, app::HTTP.Router, route::String, method::Union{String,Symbol} = :GET)
+    HTTP.@register(app,method,route,resp_fn)
+end
+
+function run(app::HTTP.Router, host = "127.0.0.1", port = 8081)
+    @info "Serving at http://$host:$port ..."
+    HTTP.serve(app,host,port)
+end
+
+##########################
+
+const APP = init()
+
+function f(r::HTTP.Request)
+    return HTTP.Response(200,"{\"Hello\":\"World!\"}")
+end
+
+route(f,APP,"/",:GET)
+
+run(APP)
+

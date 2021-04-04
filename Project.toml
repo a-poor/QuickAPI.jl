@@ -2,3 +2,6 @@ name = "Happi"
 uuid = "97f9405e-34b9-4b4f-8534-a6405e9bb57c"
 authors = ["a-poor <45295232+a-poor@users.noreply.github.com>"]
 version = "0.1.0"
+
+[deps]
+URIs = "5c2747f8-b7ea-4ff2-ba2e-563bfd36b1d4"
