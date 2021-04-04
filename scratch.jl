@@ -1,7 +1,8 @@
 #=
 - (can't subtype, use fn) Make JsonResponse as a subtype of HTTP response
 - Create logger
-- macro w/in macro => HTTP.@register
+- macro w/in macro => HTTP.@register (working for now)
+- Handle route path variables
 =#
 module Happi
 
@@ -40,19 +41,19 @@ end
 
 # Macros for: GET, POST, PUT, DELETE
 
-macro get(path::String, response::Function)
+macro get(path::String, response)
     HTTP.@register(APP,:GET,path,response)
 end
 
-macro post(path::String, response::Function)
+macro post(path::String, response)
     HTTP.@register(APP,:POST,path,response)
 end
 
-macro put(path::String, response::Function)
+macro put(path::String, response)
     HTTP.@register(APP,:PUT,path,response)
 end
 
-macro delete(path::String, response::Function)
+macro delete(path::String, response)
     HTTP.@register(APP,:DELETE,path,response)
 end
 
@@ -67,25 +68,27 @@ export APP,
     GET, POST, PUT, DELETE,
     LOCALHOST,
     CONTENT_TYPES,
-    rjson
+    rjson,
+    @get, @post, @put, @delete,
+    serve
 
 end # module
 
 ############################################
 
-using HTTP
-using JSON
+# using HTTP
+# using JSON
 using .Happi
 
 @info "Starting module..."
 
-HTTP.@register(APP,GET,"/",r::HTTP.Request -> begin
+@get "/" (r::HTTP.Request -> begin
     rjson(Dict(
         "hello" => "world",
         "dogs" => 3
     ))
 end)
 
-HTTP.serve(APP,LOCALHOST,8080)
+serve(LOCALHOST, 8080)
 
 @info "Done."
