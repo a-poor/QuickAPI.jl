@@ -4,7 +4,7 @@
 - macro w/in macro => HTTP.@register (working for now)
 - Handle route path variables
 =#
-module Happi
+module Hapi
 
 import HTTP
 import URIs
