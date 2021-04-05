@@ -1,4 +1,4 @@
-# Happi.jl
+# Hapi.jl
 
 _created by Austin Poor_
 
