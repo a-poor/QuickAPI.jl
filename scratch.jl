@@ -41,7 +41,54 @@ function rjson(data::Any ; status::Int = 200, header::Array{Pair{String,String},
     )
 end
 
+# Responses
+
+function TextResponse(data::Any; status::Int=200, headers=Pair{String,String}[], kw...)
+    HTTP.Response(
+        status,
+        ["Content-Type"=>CONTENT_TYPES[:text],
+        headers...] ;
+        body=string(data),
+        kw...
+    )
+end
+
+function JsonResponse(data::Any; status::Int=200, headers=Pair{String,String}[], kw...)
+    HTTP.Response(
+        status,
+        ["Content-Type"=>CONTENT_TYPES[:json],
+        headers...] ;
+        body=JSON2.write(data),
+        kw...
+    )
+end
+
+function MsgpackResponse(data::Any; status::Int=200, headers=Pair{String,String}[], kw...)
+    HTTP.Response(
+        status,
+        ["Content-Type"=>CONTENT_TYPES[:msgpack],
+        headers...] ;
+        body=MsgPack.pack(data),
+        kw...
+    )
+end
+
+const RESPONSE_TYPES = Dict(
+    :text    => TextResponse,
+    :json    => JsonResponse,
+    :msgpack => MsgpackResponse
+)
+
 # Macros for: GET, POST, PUT, DELETE
+
+macro route(path::String, method::Symbol, response_type::Symbol, response)
+    HTTP.@register(
+        APP,
+        method,
+        path,
+        r -> JsonResponse(response(r))
+    )
+end
 
 macro get(path::String, response)
     HTTP.@register(
@@ -85,45 +132,13 @@ function serve(host=LOCALHOST, port=8081; kw...)
     HTTP.serve(APP,host,port,kw...)
 end
 
-# Responses
-
-function TextResponse(data::Any; status::Int=200, headers=Pair{String,String}[], kw...)
-    HTTP.Response(
-        status,
-        ["Content-Type"=>CONTENT_TYPES[:text],
-        headers...] ;
-        body=string(data),
-        kw...
-    )
-end
-
-function JsonResponse(data::Any; status::Int=200, headers=Pair{String,String}[], kw...)
-    HTTP.Response(
-        status,
-        ["Content-Type"=>CONTENT_TYPES[:json],
-        headers...] ;
-        body=JSON2.write(data),
-        kw...
-    )
-end
-
-function MsgpackResponse(data::Any; status::Int=200, headers=Pair{String,String}[], kw...)
-    HTTP.Response(
-        status,
-        ["Content-Type"=>CONTENT_TYPES[:msgpack],
-        headers...] ;
-        body=MsgPack.pack(data),
-        kw...
-    )
-end
-
 
 
 export APP,
     GET, POST, PUT, DELETE,
     LOCALHOST,
     CONTENT_TYPES,
-    rjson,
+    # rjson,
     @get, @post, @put, @delete,
     serve
 
