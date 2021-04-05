@@ -8,7 +8,8 @@ module Hapi
 
 import HTTP
 import URIs
-import JSON
+import JSON2
+import MsgPack
 import Sockets
 
 const APP = HTTP.Router()
@@ -28,7 +29,7 @@ const CONTENT_TYPES = Dict{Symbol,String}(
   :form       => "application/x-www-form-urlencoded",
   :multipart  => "multipart/form-data",
   :file       => "application/octet-stream",
-  :xml        => "text/xml"
+  :xml        => "text/xml",
   :msgpack    => "application/x-msgpack"
 )
 
@@ -43,24 +44,77 @@ end
 # Macros for: GET, POST, PUT, DELETE
 
 macro get(path::String, response)
-    HTTP.@register(APP,:GET,path,response)
+    HTTP.@register(
+        APP,
+        :GET,
+        path,
+        r -> JsonResponse(response(r))
+    )
 end
 
 macro post(path::String, response)
-    HTTP.@register(APP,:POST,path,response)
+    HTTP.@register(
+        APP,
+        :POST,
+        path,
+        r -> JsonResponse(response(r))
+    )
 end
 
 macro put(path::String, response)
-    HTTP.@register(APP,:PUT,path,response)
+    HTTP.@register(
+        APP,
+        :PUT,
+        path,
+        r -> JsonResponse(response(r))
+    )
 end
 
 macro delete(path::String, response)
-    HTTP.@register(APP,:DELETE,path,response)
+    HTTP.@register(
+        APP,
+        :DELETE,
+        path,
+        r -> JsonResponse(response(r))
+    )
 end
 
+# Serve the app
 
 function serve(host=LOCALHOST, port=8081; kw...)
     HTTP.serve(APP,host,port,kw...)
+end
+
+# Responses
+
+function TextResponse(data::Any; status::Int=200, headers=Pair{String,String}[], kw...)
+    HTTP.Response(
+        status,
+        ["Content-Type"=>CONTENT_TYPES[:text],
+        headers...] ;
+        body=string(data),
+        kw...
+    )
+end
+
+function JsonResponse(data::Any; status::Int=200, headers=Pair{String,String}[], kw...)
+    HTTP.Response(
+        status,
+        ["Content-Type"=>CONTENT_TYPES[:json],
+        headers...] ;
+        body=JSON2.write(data),
+        kw...
+    )
+end
+
+function MsgpackResponse(data::Any; status::Int=200, headers=Pair{String,String}[], kw...)
+    HTTP.Response(
+        status,
+        ["Content-Type"=>CONTENT_TYPES[:msgpack],
+        headers...] ;
+        body=MsgPack.pack(data),
+        kw...
+    )
 end
 
 
@@ -79,15 +133,15 @@ end # module
 
 # using HTTP
 # using JSON
-using .Happi
+using .Hapi
 
 @info "Starting module..."
 
 @get "/" (r::HTTP.Request -> begin
-    rjson(Dict(
+    Dict(
         "hello" => "world",
         "dogs" => 3
-    ))
+    )
 end)
 
 serve(LOCALHOST, 8080)
