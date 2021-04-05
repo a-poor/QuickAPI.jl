@@ -29,6 +29,7 @@ const CONTENT_TYPES = Dict{Symbol,String}(
   :multipart  => "multipart/form-data",
   :file       => "application/octet-stream",
   :xml        => "text/xml"
+  :msgpack    => "application/x-msgpack"
 )
 
 function rjson(data::Any ; status::Int = 200, header::Array{Pair{String,String},1} = Pair{String,String}[])
