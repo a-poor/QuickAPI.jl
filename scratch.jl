@@ -14,88 +14,55 @@ import Sockets
 
 const APP = HTTP.Router()
 
-const GET = "GET"
-const POST = "POST"
-const PUT = "PUT"
-const DELETE = "DELETE"
+const GET = :GET
+const POST = :POST
+const PUT = :PUT
+const DELETE = :DELETE
 
 const LOCALHOST = Sockets.localhost
 
 const CONTENT_TYPES = Dict{Symbol,String}(
   :text       => "text/plain",
-  :html       => "text/html",
   :json       => "application/json",
-  :javascript => "application/javascript",
-  :form       => "application/x-www-form-urlencoded",
-  :multipart  => "multipart/form-data",
-  :file       => "application/octet-stream",
-  :xml        => "text/xml",
-  :msgpack    => "application/x-msgpack"
+  :msgpack    => "application/x-msgpack",
 )
 
-function rjson(data::Any ; status::Int = 200, header::Array{Pair{String,String},1} = Pair{String,String}[])
+
+# Functions for Response Types
+
+function text(data::Any ; status::Int = 200, header::Array{Pair{String,String},1} = Pair{String,String}[])
+    HTTP.Response(
+        status,
+        ["Content-Type" => CONTENT_TYPES[:text], header...];
+        body = string(data)
+    )
+end
+
+function json(data::Any ; status::Int = 200, header::Array{Pair{String,String},1} = Pair{String,String}[])
     HTTP.Response(
         status,
         ["Content-Type" => CONTENT_TYPES[:json], header...];
-        body = JSON.json(data) * "\n"
+        body = JSON2.write(data)
     )
 end
 
-# Responses
-
-function TextResponse(data::Any; status::Int=200, headers=Pair{String,String}[], kw...)
+function msgpack(data::Any ; status::Int = 200, header::Array{Pair{String,String},1} = Pair{String,String}[])
     HTTP.Response(
         status,
-        ["Content-Type"=>CONTENT_TYPES[:text],
-        headers...] ;
-        body=string(data),
-        kw...
+        ["Content-Type" => CONTENT_TYPES[:msgpack], header...];
+        body = MsgPack.pack(data)
     )
 end
 
-function JsonResponse(data::Any; status::Int=200, headers=Pair{String,String}[], kw...)
-    HTTP.Response(
-        status,
-        ["Content-Type"=>CONTENT_TYPES[:json],
-        headers...] ;
-        body=JSON2.write(data),
-        kw...
-    )
-end
-
-function MsgpackResponse(data::Any; status::Int=200, headers=Pair{String,String}[], kw...)
-    HTTP.Response(
-        status,
-        ["Content-Type"=>CONTENT_TYPES[:msgpack],
-        headers...] ;
-        body=MsgPack.pack(data),
-        kw...
-    )
-end
-
-const RESPONSE_TYPES = Dict(
-    :text    => TextResponse,
-    :json    => JsonResponse,
-    :msgpack => MsgpackResponse
-)
-
-# Macros for: GET, POST, PUT, DELETE
-
-macro route(path::String, method::Symbol, response_type::Symbol, response)
-    HTTP.@register(
-        APP,
-        method,
-        path,
-        r -> JsonResponse(response(r))
-    )
-end
+# Macros for handling GET, POST, 
+# PUT, DELETE requests
 
 macro get(path::String, response)
     HTTP.@register(
         APP,
         :GET,
         path,
-        r -> JsonResponse(response(r))
+        response
     )
 end
 
@@ -104,7 +71,7 @@ macro post(path::String, response)
         APP,
         :POST,
         path,
-        r -> JsonResponse(response(r))
+        response
     )
 end
 
@@ -113,7 +80,7 @@ macro put(path::String, response)
         APP,
         :PUT,
         path,
-        r -> JsonResponse(response(r))
+        response
     )
 end
 
@@ -122,25 +89,36 @@ macro delete(path::String, response)
         APP,
         :DELETE,
         path,
-        r -> JsonResponse(response(r))
+        response
     )
 end
 
-# Serve the app
+# Logger Middleware Function
 
-function serve(host=LOCALHOST, port=8081; kw...)
-    HTTP.serve(APP,host,port,kw...)
+function LoggerHandler(r::HTTP.Request)
+    
 end
 
+# Functions to Serve the App
 
+function serve(host=LOCALHOST, port=8081; kw...)
+    try
+        HTTP.serve(APP,host,port,kw...)
+    catch e
+        @error e
+    end
+end
 
-export APP,
-    GET, POST, PUT, DELETE,
+function serve_async(host=LOCALHOST, port=8081; kw...)
+    @async HTTP.serve(APP,host,port,kw...)
+end
+
+export 
+    APP,
     LOCALHOST,
-    CONTENT_TYPES,
-    # rjson,
+    text, json, msgpack,
     @get, @post, @put, @delete,
-    serve
+    serve, serve_async
 
 end # module
 
@@ -153,12 +131,12 @@ using .Hapi
 @info "Starting module..."
 
 @get "/" (r::HTTP.Request -> begin
-    Dict(
+    msgpack(Dict(
         "hello" => "world",
         "dogs" => 3
-    )
+    ))
 end)
 
-serve(LOCALHOST, 8080)
+serve(LOCALHOST, 8081)
 
 @info "Done."
