@@ -133,7 +133,7 @@ function serve(host=LOCALHOST, port=8081; kw...)
             port;
             tcpisvalid = sock -> begin
 
-            end
+            end,
             kw...
         )
     catch e
