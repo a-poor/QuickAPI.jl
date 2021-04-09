@@ -8,9 +8,10 @@ module Hapi
 
 import HTTP
 import URIs
+import Sockets
 import JSON2
 import MsgPack
-import Sockets
+import Dates
 
 const APP = HTTP.Router()
 
@@ -93,17 +94,24 @@ macro delete(path::String, response)
     )
 end
 
-# Logger Middleware Function
+# Logger function
+function log_request()
 
-function LoggerHandler(r::HTTP.Request)
-    
 end
 
 # Functions to Serve the App
 
 function serve(host=LOCALHOST, port=8081; kw...)
     try
-        HTTP.serve(APP,host,port,kw...)
+        HTTP.serve(
+            APP,
+            host,
+            port;
+            tcpisvalid = sock -> begin
+
+            end
+            kw...
+        )
     catch e
         @error e
     end
