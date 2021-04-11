@@ -31,7 +31,7 @@ const CONTENT_TYPES = Dict{Symbol,String}(
 
 """
     @trycatch expr
-    
+
 Convenience macro which wraps an expression in a `try/catch` block.
 If the expression throws an error, it will be printed with the 
 `@error` macro.
@@ -59,7 +59,7 @@ function text(data::Any ; status::Int = 200, header::Array{Pair{String,String},1
     HTTP.Response(
         status,
         ["Content-Type" => CONTENT_TYPES[:text], header...];
-        body = string(data)
+        body = string(data) * "\n"
     )
 end
 
@@ -67,7 +67,7 @@ function json(data::Any ; status::Int = 200, header::Array{Pair{String,String},1
     HTTP.Response(
         status,
         ["Content-Type" => CONTENT_TYPES[:json], header...];
-        body = JSON2.write(data)
+        body = JSON2.write(data) * "\n"
     )
 end
 
@@ -131,9 +131,6 @@ function serve(host=LOCALHOST, port=8081; kw...)
             APP,
             host,
             port;
-            tcpisvalid = sock -> begin
-
-            end,
             kw...
         )
     catch e
@@ -159,16 +156,25 @@ end # module
 # using HTTP
 # using JSON
 using .Hapi
+using Sockets
 
 @info "Starting module..."
 
 @get "/" (r::HTTP.Request -> begin
-    msgpack(Dict(
+    json(Dict(
         "hello" => "world",
         "dogs" => 3
     ))
 end)
 
-serve(LOCALHOST, 8081)
+serve(
+    LOCALHOST, 
+    8081,
+    tcpisvalid = sock::Sockets.TCPSocket -> begin
+        @show sock
+        @show sock.buffer
+        true
+    end,
+)
 
 @info "Done."
