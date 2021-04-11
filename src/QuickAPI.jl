@@ -59,42 +59,53 @@ end
 # PUT, DELETE requests           #
 =================================#
 
-
-
-macro get(path::String, response)
+macro route(method::Symbol,path::String,response)
     HTTP.@register(
         APP,
-        :GET,
+        method,
         path,
         response
     )
+end
+
+macro get(path::String, response)
+    quote
+        @route(
+            :GET,
+            path,
+            $response
+        )
+    end
 end
 
 macro post(path::String, response)
-    HTTP.@register(
-        APP,
-        :POST,
-        path,
-        response
-    )
+    quote
+        @route(
+            :POST,
+            path,
+            $response
+        )
+    end
 end
 
 macro put(path::String, response)
-    HTTP.@register(
-        APP,
-        :PUT,
-        path,
-        response
-    )
+    quote
+        @route(
+            :PUT,
+            path,
+            $response
+        )
+    end
 end
 
 macro delete(path::String, response)
-    HTTP.@register(
-        APP,
-        :DELETE,
-        path,
-        response
-    )
+    quote
+        @route(
+            :DELETE,
+            path,
+            $response
+        )
+    end
 end
 
 
