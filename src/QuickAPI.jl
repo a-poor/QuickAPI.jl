@@ -72,7 +72,7 @@ macro get(path::String, response)
     quote
         @route(
             :GET,
-            path,
+            $path,
             $response
         )
     end
@@ -82,7 +82,7 @@ macro post(path::String, response)
     quote
         @route(
             :POST,
-            path,
+            $path,
             $response
         )
     end
@@ -92,7 +92,7 @@ macro put(path::String, response)
     quote
         @route(
             :PUT,
-            path,
+            $path,
             $response
         )
     end
@@ -102,7 +102,7 @@ macro delete(path::String, response)
     quote
         @route(
             :DELETE,
-            path,
+            $path,
             $response
         )
     end
