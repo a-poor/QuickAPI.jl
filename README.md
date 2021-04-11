@@ -2,5 +2,5 @@
 
 _created by Austin Poor_
 
-Happi is a library for quickly creating APIs in Julia.
+`QuickAPI` is a library for quickly creating APIs in Julia.
 
