@@ -1,5 +1,5 @@
 
-module Hppi
+module QuickAPI
 
 using HTTP
 
