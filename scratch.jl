@@ -103,6 +103,7 @@ end
 # Functions to Serve the App
 
 function serve(host=LOCALHOST, port=8081; kw...)
+    @info "Serving at http://$host:$port/"
     try
         HTTP.serve(
             APP,
