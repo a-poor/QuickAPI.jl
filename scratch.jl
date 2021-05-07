@@ -59,7 +59,7 @@ end
 # Macros for handling GET, POST, 
 # PUT, DELETE requests
 
-macro get(path::String, response)
+macro get(path::String, response::Expr)
     HTTP.@register(
         APP,
         :GET,
@@ -68,7 +68,7 @@ macro get(path::String, response)
     )
 end
 
-macro post(path::String, response)
+macro post(path::String, response::Expr)
     HTTP.@register(
         APP,
         :POST,
@@ -77,7 +77,7 @@ macro post(path::String, response)
     )
 end
 
-macro put(path::String, response)
+macro put(path::String, response::Expr)
     HTTP.@register(
         APP,
         :PUT,
@@ -86,7 +86,7 @@ macro put(path::String, response)
     )
 end
 
-macro delete(path::String, response)
+macro delete(path::String, response::Expr)
     HTTP.@register(
         APP,
         :DELETE,
