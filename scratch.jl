@@ -10,15 +10,15 @@ module QuickAPI
 import HTTP
 import URIs
 import Sockets
-import JSON2
+import JSON3
 import MsgPack
 import Dates
 
 const APP = HTTP.Router()
 
-const GET = :GET
-const POST = :POST
-const PUT = :PUT
+const GET    = :GET
+const POST   = :POST
+const PUT    = :PUT
 const DELETE = :DELETE
 
 const LOCALHOST = Sockets.localhost
