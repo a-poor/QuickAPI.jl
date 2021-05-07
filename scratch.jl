@@ -44,7 +44,7 @@ function json(data::Any ; status::Int = 200, header::Array{Pair{String,String},1
     HTTP.Response(
         status,
         ["Content-Type" => CONTENT_TYPES[:json], header...];
-        body = JSON2.write(data) * "\n"
+        body = JSON3.write(data) * "\n"
     )
 end
 
