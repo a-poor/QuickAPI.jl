@@ -9,11 +9,12 @@ import MsgPack
 module QuickAPI
 
 include("util.jl")
+include("errors.jl")
 
 export 
     APP,
     text, json, msgpack,
-    @get, @post, @put, @delete,
+    @route, @get, @post, @put, @delete,
     serve, serve_async
 
 const APP = HTTP.Router()
@@ -114,20 +115,17 @@ end
 =============================#
 
 function serve(host=LOCALHOST, port=8081; kw...)
-    try
-        HTTP.serve(
-            APP,
-            host,
-            port;
-            kw...
-        )
-    catch e
-        @error e
-    end
+    @trycatch HTTP.serve(
+        APP,
+        host,
+        port;
+        kw...
+    )
 end
 
 function serve_async(host=LOCALHOST, port=8081; kw...)
     @async HTTP.serve(APP,host,port,kw...)
 end
+
 
 end # module
